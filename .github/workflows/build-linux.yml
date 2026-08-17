@@ -40,12 +40,22 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+
+      - name: Normalize scripts (LF + executable)
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq dos2unix
+          # Windows checkouts often leave CRLF; Linux then fails with exit 126.
+          find . -type f \( -name '*.sh' -o -name 'autogen.sh' \) -print0 \
+            | xargs -0 -r dos2unix -q
+          chmod +x autogen.sh contrib/install_db4.sh || true
+          find . -type f -name '*.sh' -print0 | xargs -0 -r chmod +x
 
       - name: Install packages
         run: |
           set -euo pipefail
-          sudo apt-get update -qq
           sudo apt-get install -y -qq \
             build-essential libtool autotools-dev automake pkg-config \
             bsdmainutils python3 curl ca-certificates ccache \
@@ -101,7 +111,7 @@ jobs:
           cp -a "${STAGE}/usr/local/bin/"* "${OUT_DIR}/${DIST_NAME}/bin/"
           cp README.md "${OUT_DIR}/${DIST_NAME}/" 2>/dev/null || true
           cat > "${OUT_DIR}/${DIST_NAME}/README-BINARIES.txt" << EOF
-          KittehCoin2.0 Core ${VERSION} — Linux x86_64 (GUI + wallet)
+          KittehCoin2.0 Core ${VERSION} - Linux x86_64 (GUI + wallet)
           Includes: kittehcoin-qt, kittehcoind, kittehcoin-cli, kittehcoin-tx, kittehcoin-wallet
 
           Run:
@@ -161,12 +171,21 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+
+      - name: Normalize scripts (LF + executable)
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq dos2unix
+          find . -type f \( -name '*.sh' -o -name 'autogen.sh' \) -print0 \
+            | xargs -0 -r dos2unix -q
+          chmod +x autogen.sh contrib/install_db4.sh || true
+          find . -type f -name '*.sh' -print0 | xargs -0 -r chmod +x
 
       - name: Install cross toolchain
         run: |
           set -euo pipefail
-          sudo apt-get update -qq
           sudo apt-get install -y -qq \
             build-essential libtool autotools-dev automake pkg-config \
             bsdmainutils python3 curl ca-certificates ccache cmake \
@@ -221,11 +240,10 @@ jobs:
 
           mkdir -p "${OUT_DIR}/${DIST_NAME}/bin"
           cp -a "${STAGE}/bin/"* "${OUT_DIR}/${DIST_NAME}/bin/"
-          # Drop libraries/headers if present (daemon package is bin-focused)
           rm -rf "${OUT_DIR}/${DIST_NAME}/lib" "${OUT_DIR}/${DIST_NAME}/include" || true
           cp README.md "${OUT_DIR}/${DIST_NAME}/" 2>/dev/null || true
           cat > "${OUT_DIR}/${DIST_NAME}/README-BINARIES.txt" << EOF
-          KittehCoin2.0 Core ${VERSION} — Linux ${LABEL} (${HOST})
+          KittehCoin2.0 Core ${VERSION} - Linux ${LABEL} (${HOST})
           Raspberry Pi / ARM package (daemon + wallet tools, no GUI)
           Includes: kittehcoind, kittehcoin-cli, kittehcoin-tx, kittehcoin-wallet
 

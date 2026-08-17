@@ -59,6 +59,24 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Normalize scripts (LF + executable)
+        run: |
+          set -euo pipefail
+          # Guard against Windows CRLF breaking ./autogen.sh / install_db4.sh
+          python3 - <<'PY'
+          from pathlib import Path
+          for p in Path('.').rglob('*'):
+              if not p.is_file():
+                  continue
+              if p.suffix == '.sh' or p.name == 'autogen.sh':
+                  data = p.read_bytes()
+                  if b'\r' in data:
+                      p.write_bytes(data.replace(b'\r\n', b'\n').replace(b'\r', b'\n'))
+                      print(f'fixed CRLF: {p}')
+          PY
+          chmod +x autogen.sh contrib/install_db4.sh
+          find . -type f -name '*.sh' -print0 | xargs -0 chmod +x
+
       - name: Install Homebrew dependencies
         run: |
           set -euo pipefail

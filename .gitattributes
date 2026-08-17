@@ -1,1 +1,8 @@
 src/clientversion.cpp export-subst
+
+# Keep shell/build scripts LF so Linux/macOS CI can execute them (exit 126 on CRLF).
+*.sh text eol=lf
+autogen.sh text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
