@@ -1,0 +1,15 @@
+Fix compiling Qt 5.9 with GCC 11+.
+
+See: https://bugreports.qt.io/browse/QTBUG-90395
+
+--- old/qtbase/src/corelib/tools/qbytearraymatcher.h
++++ new/qtbase/src/corelib/tools/qbytearraymatcher.h
+@@ -42,6 +42,8 @@
+ 
+ #include <QtCore/qbytearray.h>
+ 
++#include <limits>
++
+ QT_BEGIN_NAMESPACE
+ 
+ 
