@@ -1,0 +1,17 @@
+[Desktop Entry]
+Version=1.0
+Name=KittehCoin2.0 Core
+Comment=Connect to the KittehCoin 2.0 (MEOWS) P2P Network
+Comment[de]=Verbindung mit dem KittehCoin 2.0 Peer-to-Peer-Netzwerk herstellen
+Comment[es]=Conectar a la red P2P de KittehCoin 2.0
+Comment[fr]=Se connecter au réseau pair à pair KittehCoin 2.0
+GenericName=Cryptocurrency Wallet
+Exec=kittehcoin-qt %u
+Terminal=false
+Type=Application
+Icon=kittehcoin128
+MimeType=x-scheme-handler/kittehcoin;
+Categories=Office;Finance;Network;
+Keywords=kittehcoin;meows;crypto;cryptocurrency;wallet;blockchain;
+StartupNotify=true
+StartupWMClass=KittehCoin2.0-qt
