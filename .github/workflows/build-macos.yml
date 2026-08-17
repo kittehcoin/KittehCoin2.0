@@ -6,7 +6,8 @@
 #
 # Notes:
 #   - Unsigned build (Gatekeeper will warn until Apple notarization is added)
-#   - SQLite + Berkeley DB 4.8 wallets enabled
+#   - SQLite + Berkeley DB 4.8 wallets enabled (BDB built from source; Homebrew
+#     disabled berkeley-db@4 on 2025-08-24)
 #   - Default runner is Apple Silicon (arm64). Add macos-13 for Intel if needed.
 
 name: Build macOS DMG
@@ -47,19 +48,23 @@ jobs:
     env:
       VERSION: "2.0.0"
       CCACHE_DIR: ${{ github.workspace }}/.ccache
-      # Keep configure looking at Homebrew Qt 5 / SQLite / BDB paths.
       HOMEBREW_NO_AUTO_UPDATE: "1"
       HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: "1"
+      # Silence untrusted-tap noise on GitHub runners (aws/tap etc.).
+      HOMEBREW_NO_REQUIRE_TAP_TRUST: "1"
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
 
       - name: Install Homebrew dependencies
         run: |
           set -euo pipefail
           brew update
-          # Prefer qt@5 (Qt 6 breaks this Autotools/Qt5 tree).
+          # qt@5 is deprecated but still required by this Autotools/Qt5 tree.
+          # Do NOT install berkeley-db@4 — Homebrew disabled it (2025-08-24).
           brew install \
             automake \
             libtool \
@@ -73,8 +78,14 @@ jobs:
             librsvg \
             ccache \
             python \
-            qt@5 \
-            berkeley-db@4
+            qt@5
+
+      - name: Build Berkeley DB 4.8 from source
+        run: |
+          set -euo pipefail
+          ./contrib/install_db4.sh "$(pwd)"
+          test -f db4/lib/libdb_cxx-4.8.a
+          echo "BDB_PREFIX=${PWD}/db4" >> "$GITHUB_ENV"
 
       - name: Restore ccache
         uses: actions/cache@v4
@@ -91,7 +102,7 @@ jobs:
 
           QT_PREFIX="$(brew --prefix qt@5)"
           SQLITE_PREFIX="$(brew --prefix sqlite)"
-          BDB_PREFIX="$(brew --prefix berkeley-db@4)"
+          BDB_PREFIX="${BDB_PREFIX:-${PWD}/db4}"
 
           export PATH="${QT_PREFIX}/bin:${PATH}"
           export PKG_CONFIG_PATH="${QT_PREFIX}/lib/pkgconfig:${SQLITE_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
@@ -109,7 +120,9 @@ jobs:
             --with-sqlite=yes \
             --enable-wallet \
             --with-miniupnpc \
-            --with-qrencode
+            --with-qrencode \
+            BDB_LIBS="${BDB_LIBS}" \
+            BDB_CFLAGS="${BDB_CFLAGS}"
 
           echo "=== configure summary (tail) ==="
           ./config.status --config || true

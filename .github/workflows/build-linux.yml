@@ -1,0 +1,266 @@
+# Build KittehCoin2.0 Core Linux binaries and attach them to a GitHub Release.
+#
+# Targets:
+#   - x86_64 desktop (GUI wallet + daemon) on Ubuntu 22.04
+#   - Raspberry Pi 64-bit (aarch64) daemon+wallet via depends cross-compile
+#   - Raspberry Pi 32-bit (armhf) daemon+wallet via depends cross-compile
+#
+# Triggers: publish a Release, or run manually from the Actions tab.
+
+name: Build Linux binaries
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Optional release tag to attach artifacts to (e.g. v2.0.0). Leave empty to only upload workflow artifacts."
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-linux-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VERSION: "2.0.0"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Desktop Linux x86_64 — GUI + wallet (system Qt5 + Berkeley DB 4.8)
+  # ---------------------------------------------------------------------------
+  linux-x86_64:
+    name: Linux x86_64 (GUI)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install packages
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            build-essential libtool autotools-dev automake pkg-config \
+            bsdmainutils python3 curl ca-certificates ccache \
+            libssl-dev libevent-dev libboost-system-dev libboost-filesystem-dev \
+            libboost-thread-dev libboost-chrono-dev libboost-test-dev \
+            libfmt-dev libsqlite3-dev libminiupnpc-dev libzmq3-dev \
+            libqrencode-dev \
+            libqt5gui5 libqt5core5a libqt5dbus5 qttools5-dev qttools5-dev-tools
+
+      - name: Build Berkeley DB 4.8
+        run: |
+          set -euo pipefail
+          ./contrib/install_db4.sh "$(pwd)"
+          test -f db4/lib/libdb_cxx-4.8.a
+
+      - name: Configure
+        run: |
+          set -euo pipefail
+          ./autogen.sh
+          export BDB_PREFIX="${PWD}/db4"
+          ./configure \
+            --prefix=/usr/local \
+            --disable-dependency-tracking \
+            --disable-bench \
+            --disable-tests \
+            --disable-gui-tests \
+            --with-gui=qt5 \
+            --with-sqlite=yes \
+            --enable-wallet \
+            --with-miniupnpc \
+            --with-qrencode \
+            --enable-zmq \
+            BDB_LIBS="-L${BDB_PREFIX}/lib -ldb_cxx-4.8" \
+            BDB_CFLAGS="-I${BDB_PREFIX}/include"
+
+      - name: Build
+        run: |
+          set -euo pipefail
+          make -j"$(nproc)"
+
+      - name: Package tarball
+        id: package
+        run: |
+          set -euo pipefail
+          STAGE="${PWD}/stage"
+          DIST_NAME="KittehCoin2.0-Core-${VERSION}-x86_64-linux-gnu"
+          OUT_DIR="${PWD}/dist"
+          mkdir -p "${STAGE}" "${OUT_DIR}"
+
+          make install DESTDIR="${STAGE}"
+
+          mkdir -p "${OUT_DIR}/${DIST_NAME}/bin"
+          cp -a "${STAGE}/usr/local/bin/"* "${OUT_DIR}/${DIST_NAME}/bin/"
+          cp README.md "${OUT_DIR}/${DIST_NAME}/" 2>/dev/null || true
+          cat > "${OUT_DIR}/${DIST_NAME}/README-BINARIES.txt" << EOF
+          KittehCoin2.0 Core ${VERSION} — Linux x86_64 (GUI + wallet)
+          Includes: kittehcoin-qt, kittehcoind, kittehcoin-cli, kittehcoin-tx, kittehcoin-wallet
+
+          Run:
+            ./bin/kittehcoin-qt
+            ./bin/kittehcoind -daemon
+          EOF
+
+          tar -C "${OUT_DIR}" -czf "${OUT_DIR}/${DIST_NAME}.tar.gz" "${DIST_NAME}"
+          sha256sum "${OUT_DIR}/${DIST_NAME}.tar.gz" | tee "${OUT_DIR}/${DIST_NAME}.tar.gz.sha256"
+
+          echo "tarball=${OUT_DIR}/${DIST_NAME}.tar.gz" >> "$GITHUB_OUTPUT"
+          echo "sha256=${OUT_DIR}/${DIST_NAME}.tar.gz.sha256" >> "$GITHUB_OUTPUT"
+          echo "asset_name=${DIST_NAME}.tar.gz" >> "$GITHUB_OUTPUT"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.asset_name }}
+          path: |
+            ${{ steps.package.outputs.tarball }}
+            ${{ steps.package.outputs.sha256 }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Attach to GitHub Release
+        if: github.event_name == 'release' || inputs.release_tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.release_tag }}
+        run: |
+          set -euo pipefail
+          [[ -n "${TAG}" ]] || exit 0
+          gh release upload "${TAG}" \
+            "${{ steps.package.outputs.tarball }}" \
+            "${{ steps.package.outputs.sha256 }}" \
+            --clobber
+
+  # ---------------------------------------------------------------------------
+  # Raspberry Pi — cross-compile daemon+wallet (no GUI) via depends
+  #   aarch64 = Pi 3/4/5 64-bit OS
+  #   armhf   = older 32-bit Raspberry Pi OS
+  # ---------------------------------------------------------------------------
+  linux-pi:
+    name: Pi ${{ matrix.label }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - host: aarch64-linux-gnu
+            label: aarch64
+            packages: g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
+          - host: arm-linux-gnueabihf
+            label: armhf
+            packages: g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install cross toolchain
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            build-essential libtool autotools-dev automake pkg-config \
+            bsdmainutils python3 curl ca-certificates ccache cmake \
+            ${{ matrix.packages }}
+
+      - name: Cache depends
+        uses: actions/cache@v4
+        with:
+          path: depends/built
+          key: depends-${{ matrix.host }}-${{ hashFiles('depends/packages/*', 'depends/patches/**') }}
+          restore-keys: |
+            depends-${{ matrix.host }}-
+
+      - name: Build depends (NO_QT)
+        run: |
+          set -euo pipefail
+          make -C depends HOST="${{ matrix.host }}" NO_QT=1 -j"$(nproc)"
+
+      - name: Configure & build
+        run: |
+          set -euo pipefail
+          HOST="${{ matrix.host }}"
+          PREFIX="${PWD}/depends/${HOST}"
+          ./autogen.sh
+          CONFIG_SITE="${PREFIX}/share/config.site" ./configure \
+            --prefix=/ \
+            --disable-ccache \
+            --disable-maintainer-mode \
+            --disable-dependency-tracking \
+            --disable-bench \
+            --disable-tests \
+            --without-gui \
+            --enable-wallet \
+            --with-sqlite=yes \
+            --enable-glibc-back-compat \
+            --enable-reduce-exports \
+            LDFLAGS=-static-libstdc++
+          make -j"$(nproc)"
+
+      - name: Package tarball
+        id: package
+        run: |
+          set -euo pipefail
+          HOST="${{ matrix.host }}"
+          LABEL="${{ matrix.label }}"
+          STAGE="${PWD}/stage"
+          DIST_NAME="KittehCoin2.0-Core-${VERSION}-${HOST}"
+          OUT_DIR="${PWD}/dist"
+          mkdir -p "${STAGE}" "${OUT_DIR}"
+
+          make install DESTDIR="${STAGE}"
+
+          mkdir -p "${OUT_DIR}/${DIST_NAME}/bin"
+          cp -a "${STAGE}/bin/"* "${OUT_DIR}/${DIST_NAME}/bin/"
+          # Drop libraries/headers if present (daemon package is bin-focused)
+          rm -rf "${OUT_DIR}/${DIST_NAME}/lib" "${OUT_DIR}/${DIST_NAME}/include" || true
+          cp README.md "${OUT_DIR}/${DIST_NAME}/" 2>/dev/null || true
+          cat > "${OUT_DIR}/${DIST_NAME}/README-BINARIES.txt" << EOF
+          KittehCoin2.0 Core ${VERSION} — Linux ${LABEL} (${HOST})
+          Raspberry Pi / ARM package (daemon + wallet tools, no GUI)
+          Includes: kittehcoind, kittehcoin-cli, kittehcoin-tx, kittehcoin-wallet
+
+          On the Pi:
+            chmod +x bin/*
+            ./bin/kittehcoind -daemon
+            ./bin/kittehcoin-cli getblockchaininfo
+          EOF
+
+          tar -C "${OUT_DIR}" -czf "${OUT_DIR}/${DIST_NAME}.tar.gz" "${DIST_NAME}"
+          sha256sum "${OUT_DIR}/${DIST_NAME}.tar.gz" | tee "${OUT_DIR}/${DIST_NAME}.tar.gz.sha256"
+
+          echo "tarball=${OUT_DIR}/${DIST_NAME}.tar.gz" >> "$GITHUB_OUTPUT"
+          echo "sha256=${OUT_DIR}/${DIST_NAME}.tar.gz.sha256" >> "$GITHUB_OUTPUT"
+          echo "asset_name=${DIST_NAME}.tar.gz" >> "$GITHUB_OUTPUT"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.asset_name }}
+          path: |
+            ${{ steps.package.outputs.tarball }}
+            ${{ steps.package.outputs.sha256 }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Attach to GitHub Release
+        if: github.event_name == 'release' || inputs.release_tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.release_tag }}
+        run: |
+          set -euo pipefail
+          [[ -n "${TAG}" ]] || exit 0
+          gh release upload "${TAG}" \
+            "${{ steps.package.outputs.tarball }}" \
+            "${{ steps.package.outputs.sha256 }}" \
+            --clobber
