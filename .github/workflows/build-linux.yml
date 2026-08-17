@@ -31,7 +31,7 @@ env:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Desktop Linux x86_64 — GUI + wallet (system Qt5 + Berkeley DB 4.8)
+  # Desktop Linux x86_64 â€” GUI + wallet (system Qt5 + Berkeley DB 4.8)
   # ---------------------------------------------------------------------------
   linux-x86_64:
     name: Linux x86_64 (GUI)
@@ -74,6 +74,9 @@ jobs:
       - name: Configure
         run: |
           set -euo pipefail
+          # Regenerate libtool/autoconf files from the runner toolchain.
+          rm -f aclocal.m4
+          libtoolize --copy --force
           ./autogen.sh
           export BDB_PREFIX="${PWD}/db4"
           ./configure \
@@ -150,7 +153,7 @@ jobs:
             --clobber
 
   # ---------------------------------------------------------------------------
-  # Raspberry Pi — cross-compile daemon+wallet (no GUI) via depends
+  # Raspberry Pi â€” cross-compile daemon+wallet (no GUI) via depends
   #   aarch64 = Pi 3/4/5 64-bit OS
   #   armhf   = older 32-bit Raspberry Pi OS
   # ---------------------------------------------------------------------------
@@ -209,6 +212,9 @@ jobs:
           set -euo pipefail
           HOST="${{ matrix.host }}"
           PREFIX="${PWD}/depends/${HOST}"
+          # Regenerate libtool/autoconf files from the runner toolchain.
+          rm -f aclocal.m4
+          libtoolize --copy --force
           ./autogen.sh
           CONFIG_SITE="${PREFIX}/share/config.site" ./configure \
             --prefix=/ \
