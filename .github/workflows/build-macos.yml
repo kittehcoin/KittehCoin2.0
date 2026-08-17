@@ -167,6 +167,10 @@ jobs:
           set -euo pipefail
           make deploy
           ls -lah *.dmg KittehCoin-Qt.app/Contents/MacOS/ 2>/dev/null || true
+          # macdeploy may emit KittehCoin-Qt.dmg unless -dmg basename is passed.
+          if [ ! -f "KittehCoin2.0-Core.dmg" ] && [ -f "KittehCoin-Qt.dmg" ]; then
+            mv "KittehCoin-Qt.dmg" "KittehCoin2.0-Core.dmg"
+          fi
           test -f "KittehCoin2.0-Core.dmg"
 
       - name: Package release assets

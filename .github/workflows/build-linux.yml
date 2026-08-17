@@ -50,7 +50,11 @@ jobs:
           # Windows checkouts often leave CRLF; Linux then fails with exit 126.
           find . -type f \( -name '*.sh' -o -name 'autogen.sh' \) -print0 \
             | xargs -0 -r dos2unix -q
-          chmod +x autogen.sh contrib/install_db4.sh || true
+          # depends Makefiles/config.* must be LF + executable for cross builds.
+          find depends -type f \( -name 'Makefile' -o -name '*.mk' -o -name '*.in' \
+            -o -name 'config.guess' -o -name 'config.sub' \) -print0 \
+            | xargs -0 -r dos2unix -q
+          chmod +x autogen.sh contrib/install_db4.sh depends/config.guess depends/config.sub || true
           find . -type f -name '*.sh' -print0 | xargs -0 -r chmod +x
 
       - name: Install packages
@@ -183,7 +187,10 @@ jobs:
           sudo apt-get install -y -qq dos2unix
           find . -type f \( -name '*.sh' -o -name 'autogen.sh' \) -print0 \
             | xargs -0 -r dos2unix -q
-          chmod +x autogen.sh contrib/install_db4.sh || true
+          find depends -type f \( -name 'Makefile' -o -name '*.mk' -o -name '*.in' \
+            -o -name 'config.guess' -o -name 'config.sub' \) -print0 \
+            | xargs -0 -r dos2unix -q
+          chmod +x autogen.sh contrib/install_db4.sh depends/config.guess depends/config.sub || true
           find . -type f -name '*.sh' -print0 | xargs -0 -r chmod +x
 
       - name: Install cross toolchain
