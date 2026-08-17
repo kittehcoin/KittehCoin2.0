@@ -65,7 +65,19 @@ http_get() {
 
 mkdir -p "${BDB_PREFIX}"
 http_get "${BDB_URL}" "${BDB_VERSION}.tar.gz" "${BDB_HASH}"
-tar -xzvf ${BDB_VERSION}.tar.gz -C "$BDB_PREFIX"
+# macOS ships BSD tar, which often exits 1 on GNU/Oracle tarballs (unknown
+# extended headers) even when extraction succeeds. With set -e that aborts here.
+set +e
+tar -xzf "${BDB_VERSION}.tar.gz" -C "${BDB_PREFIX}"
+tar_status=$?
+set -e
+if [ "${tar_status}" -ne 0 ]; then
+  if [ ! -d "${BDB_PREFIX}/${BDB_VERSION}" ]; then
+    echo "tar failed with status ${tar_status} and ${BDB_VERSION} was not extracted" >&2
+    exit "${tar_status}"
+  fi
+  echo "Warning: tar exited ${tar_status}; continuing because ${BDB_VERSION} exists"
+fi
 cd "${BDB_PREFIX}/${BDB_VERSION}/"
 
 # Apply a patch necessary when building with clang and c++11 (see https://community.oracle.com/thread/3952592)
@@ -78,6 +90,12 @@ else
   CLANG_CXX11_PATCH_HASH='7a9a47b03fd5fb93a16ef42235fa9512db9b0829cfc3bdf90edd3ec1f44d637c'
   http_get "${CLANG_CXX11_PATCH_URL}" clang.patch "${CLANG_CXX11_PATCH_HASH}"
   patch -p2 < clang.patch
+fi
+
+# Confirm patch took effect (atomic_init was renamed to atomic_init_db).
+if ! grep -q 'atomic_init_db' dbinc/atomic.h; then
+  echo "clang C++11 patch did not apply (atomic_init_db missing)" >&2
+  exit 1
 fi
 
 # The packaged config.guess and config.sub are ancient (2009) and can cause build issues.
