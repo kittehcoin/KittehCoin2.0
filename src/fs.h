@@ -13,6 +13,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <boost/version.hpp>
 
 /** Filesystem operations and types */
 namespace fs = boost::filesystem;
@@ -42,6 +43,17 @@ namespace fsbridge {
     };
 
     std::string get_filesystem_error_message(const fs::filesystem_error& e);
+
+    // Boost.Filesystem < 1.74 uses copy_option::overwrite_if_exists;
+    // 1.74+ (and C++17) uses copy_options::overwrite_existing.
+    inline void copy_file_overwrite(const fs::path& src, const fs::path& dest)
+    {
+#if BOOST_VERSION >= 107400
+        fs::copy_file(src, dest, fs::copy_options::overwrite_existing);
+#else
+        fs::copy_file(src, dest, fs::copy_option::overwrite_if_exists);
+#endif
+    }
 
     // GNU libstdc++ specific workaround for opening UTF-8 paths on Windows.
     //
