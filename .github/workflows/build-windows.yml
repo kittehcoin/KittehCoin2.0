@@ -1,0 +1,167 @@
+# Build KittehCoin2.0 Core Windows 64-bit GUI (MinGW cross-compile).
+#
+# Matches doc/build-windows.md: depends HOST=x86_64-w64-mingw32, then
+# configure/make/make deploy (NSIS installer).
+#
+# Triggers: publish a Release, or run manually from the Actions tab.
+
+name: Build Windows GUI
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Optional release tag to attach artifacts to (e.g. v2.0.0). Leave empty to only upload workflow artifacts."
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VERSION: "2.0.0"
+  HOST: x86_64-w64-mingw32
+
+jobs:
+  windows-win64:
+    name: Windows x64 (GUI)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 300
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Normalize scripts (LF + executable)
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq dos2unix
+          find . -type f \( -name '*.sh' -o -name 'autogen.sh' \) -print0 \
+            | xargs -0 -r dos2unix -q
+          find depends -type f \( -name 'Makefile' -o -name '*.mk' -o -name '*.in' \
+            -o -name 'config.guess' -o -name 'config.sub' \) -print0 \
+            | xargs -0 -r dos2unix -q
+          chmod +x autogen.sh contrib/install_db4.sh depends/config.guess depends/config.sub || true
+          find . -type f -name '*.sh' -print0 | xargs -0 -r chmod +x
+
+      - name: Install MinGW toolchain
+        run: |
+          set -euo pipefail
+          sudo apt-get install -y -qq \
+            build-essential libtool autotools-dev automake pkg-config \
+            bsdmainutils python3 curl ca-certificates ccache cmake nsis zip \
+            g++-mingw-w64-x86-64
+          # C++11 mutex/thread require the posix-threaded MinGW runtime.
+          sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
+          sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
+          # Stop wine/binfmt from trying to execute Windows PE during configure.
+          echo 0 | sudo tee /proc/sys/fs/binfmt_misc/status >/dev/null || true
+
+      - name: Cache depends
+        uses: actions/cache@v4
+        with:
+          path: depends/built
+          key: depends-${{ env.HOST }}-${{ hashFiles('depends/packages/*', 'depends/patches/**') }}
+          restore-keys: |
+            depends-${{ env.HOST }}-
+
+      - name: Build depends (Qt + wallet)
+        run: |
+          set -euo pipefail
+          make -C depends HOST="${HOST}" -j"$(nproc)"
+
+      - name: Configure
+        run: |
+          set -euo pipefail
+          PREFIX="${PWD}/depends/${HOST}"
+          rm -f aclocal.m4
+          libtoolize --copy --force
+          ./autogen.sh
+          CONFIG_SITE="${PREFIX}/share/config.site" ./configure \
+            --prefix=/ \
+            --disable-ccache \
+            --disable-maintainer-mode \
+            --disable-dependency-tracking \
+            --disable-bench \
+            --disable-tests \
+            --disable-gui-tests \
+            --with-gui=qt5 \
+            --enable-wallet \
+            --with-sqlite=yes \
+            --enable-reduce-exports \
+            --without-boost-process
+
+      - name: Build
+        run: |
+          set -euo pipefail
+          make -j"$(nproc)"
+
+      - name: Create installer
+        run: |
+          set -euo pipefail
+          make deploy
+          ls -lah ./*.exe release/*.exe 2>/dev/null || true
+          test -f kittehcoin-*-win64-setup.exe
+
+      - name: Package release assets
+        id: package
+        run: |
+          set -euo pipefail
+          OUT_DIR="${PWD}/dist"
+          DIST_NAME="KittehCoin2.0-Core-${VERSION}-win64"
+          mkdir -p "${OUT_DIR}/${DIST_NAME}"
+
+          SETUP_SRC="$(ls -1 kittehcoin-*-win64-setup.exe | head -n 1)"
+          SETUP_NAME="KittehCoin2.0-Core-${VERSION}-win64-setup.exe"
+          cp "${SETUP_SRC}" "${OUT_DIR}/${SETUP_NAME}"
+
+          cp release/*.exe "${OUT_DIR}/${DIST_NAME}/"
+          cp README.md "${OUT_DIR}/${DIST_NAME}/" 2>/dev/null || true
+          cat > "${OUT_DIR}/${DIST_NAME}/README-BINARIES.txt" << EOF
+          KittehCoin2.0 Core ${VERSION} - Windows 64-bit (GUI + wallet)
+          Includes: kittehcoin-qt.exe, kittehcoind.exe, kittehcoin-cli.exe,
+                    kittehcoin-tx.exe, kittehcoin-wallet.exe
+
+          Run kittehcoin-qt.exe, or use the NSIS installer:
+            ${SETUP_NAME}
+          EOF
+          (cd "${OUT_DIR}" && zip -r "${DIST_NAME}.zip" "${DIST_NAME}")
+          sha256sum "${OUT_DIR}/${SETUP_NAME}" "${OUT_DIR}/${DIST_NAME}.zip" \
+            | tee "${OUT_DIR}/${SETUP_NAME}.sha256"
+
+          echo "setup=${OUT_DIR}/${SETUP_NAME}" >> "$GITHUB_OUTPUT"
+          echo "zip=${OUT_DIR}/${DIST_NAME}.zip" >> "$GITHUB_OUTPUT"
+          echo "sha256=${OUT_DIR}/${SETUP_NAME}.sha256" >> "$GITHUB_OUTPUT"
+          echo "asset_name=${SETUP_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.asset_name }}
+          path: |
+            ${{ steps.package.outputs.setup }}
+            ${{ steps.package.outputs.zip }}
+            ${{ steps.package.outputs.sha256 }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Attach to GitHub Release
+        if: github.event_name == 'release' || inputs.release_tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.release_tag }}
+        run: |
+          set -euo pipefail
+          [[ -n "${TAG}" ]] || exit 0
+          gh release upload "${TAG}" \
+            "${{ steps.package.outputs.setup }}" \
+            "${{ steps.package.outputs.zip }}" \
+            "${{ steps.package.outputs.sha256 }}" \
+            --clobber
