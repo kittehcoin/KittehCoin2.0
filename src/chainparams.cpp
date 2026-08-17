@@ -135,10 +135,12 @@ public:
         assert(consensus.hashGenesisBlock == uint256S("0x4f2f309ba49ca94f1a0ad98186845fe85a0b3de2ce5cc5b541057348cc6ea72a"));
         assert(genesis.hashMerkleRoot == uint256S("0x05209a5929ded8af442a64b290665e5124c86c4008db110efb18f0cec82ca882"));
 
-        // DNS seeds — update when infrastructure is online
+        // DNS seeds — hostnames wallets look up on first start
         vSeeds.clear();
         vSeeds.emplace_back("seed1.kittehcoin.ca");
         vSeeds.emplace_back("seed2.kittehcoin.ca");
+        vSeeds.emplace_back("seed3.kittehcoin.ca");
+        vSeeds.emplace_back("seed4.kittehcoin.ca");
 
         // Original KittehCoin pubkey version 45 => addresses start with K
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,45);
