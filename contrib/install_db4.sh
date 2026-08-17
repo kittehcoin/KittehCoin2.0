@@ -120,8 +120,9 @@ if [ ! -f "${BASE_DIR}/depends/config.guess" ] || [ ! -f "${BASE_DIR}/depends/co
   exit 1
 fi
 echo "Using in-tree depends/config.guess and depends/config.sub"
-cp -f "${BASE_DIR}/depends/config.guess" dist/config.guess
-cp -f "${BASE_DIR}/depends/config.sub" dist/config.sub
+# Strip CR so a CRLF checkout still produces runnable /bin/sh scripts.
+tr -d '\r' < "${BASE_DIR}/depends/config.guess" > dist/config.guess
+tr -d '\r' < "${BASE_DIR}/depends/config.sub" > dist/config.sub
 chmod +x dist/config.guess dist/config.sub
 
 cd build_unix/
