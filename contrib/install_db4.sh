@@ -81,13 +81,23 @@ fi
 cd "${BDB_PREFIX}/${BDB_VERSION}/"
 
 # Apply a patch necessary when building with clang and c++11 (see https://community.oracle.com/thread/3952592)
+# Strip CR so a CRLF-checked-out patch still matches the Unix BDB tree.
 CLANG_PATCH="${BASE_DIR}/depends/patches/bdb/clang_cxx_11.patch"
+CLANG_CXX11_PATCH_URL='https://gist.githubusercontent.com/LnL7/5153b251fd525fe15de69b67e63a6075/raw/7778e9364679093a32dec2908656738e16b6bdcb/clang.patch'
+CLANG_CXX11_PATCH_HASH='7a9a47b03fd5fb93a16ef42235fa9512db9b0829cfc3bdf90edd3ec1f44d637c'
 if [ -f "${CLANG_PATCH}" ]; then
   echo "Applying in-tree clang C++11 patch: ${CLANG_PATCH}"
-  patch -p1 < "${CLANG_PATCH}"
+  tr -d '\r' < "${CLANG_PATCH}" > clang_cxx_11.lf.patch
+  set +e
+  patch -p1 < clang_cxx_11.lf.patch
+  patch_status=$?
+  set -e
+  if [ "${patch_status}" -ne 0 ]; then
+    echo "In-tree patch failed (status ${patch_status}); falling back to gist patch"
+    http_get "${CLANG_CXX11_PATCH_URL}" clang.patch "${CLANG_CXX11_PATCH_HASH}"
+    patch -p2 < clang.patch
+  fi
 else
-  CLANG_CXX11_PATCH_URL='https://gist.githubusercontent.com/LnL7/5153b251fd525fe15de69b67e63a6075/raw/7778e9364679093a32dec2908656738e16b6bdcb/clang.patch'
-  CLANG_CXX11_PATCH_HASH='7a9a47b03fd5fb93a16ef42235fa9512db9b0829cfc3bdf90edd3ec1f44d637c'
   http_get "${CLANG_CXX11_PATCH_URL}" clang.patch "${CLANG_CXX11_PATCH_HASH}"
   patch -p2 < clang.patch
 fi

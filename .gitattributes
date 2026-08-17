@@ -6,3 +6,5 @@ autogen.sh text eol=lf
 *.py text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
+# Patches must be LF or hunks fail against Unix source trees.
+*.patch text eol=lf
