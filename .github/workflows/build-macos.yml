@@ -1,0 +1,172 @@
+# Build KittehCoin2.0 Core macOS .dmg and attach it to a GitHub Release.
+#
+# Triggers:
+#   - Publishing a GitHub Release (recommended)
+#   - Manual run (Actions → Build macOS DMG → Run workflow)
+#
+# Notes:
+#   - Unsigned build (Gatekeeper will warn until Apple notarization is added)
+#   - SQLite + Berkeley DB 4.8 wallets enabled
+#   - Default runner is Apple Silicon (arm64). Add macos-13 for Intel if needed.
+
+name: Build macOS DMG
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Optional release tag to attach the .dmg to (e.g. v2.0.0). Leave empty to only upload a workflow artifact."
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-macos-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos-dmg:
+    name: macOS ${{ matrix.os }} DMG
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        # Pin versions to avoid silent runner image upgrades.
+        include:
+          - os: macos-14
+            arch: arm64
+          # Uncomment for Intel Macs:
+          # - os: macos-13
+          #   arch: x86_64
+
+    env:
+      VERSION: "2.0.0"
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      # Keep configure looking at Homebrew Qt 5 / SQLite / BDB paths.
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Homebrew dependencies
+        run: |
+          set -euo pipefail
+          brew update
+          # Prefer qt@5 (Qt 6 breaks this Autotools/Qt5 tree).
+          brew install \
+            automake \
+            libtool \
+            pkg-config \
+            boost \
+            libevent \
+            miniupnpc \
+            qrencode \
+            fmt \
+            sqlite \
+            librsvg \
+            ccache \
+            python \
+            qt@5 \
+            berkeley-db@4
+
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-macos-${{ matrix.arch }}-${{ github.sha }}
+          restore-keys: |
+            ccache-macos-${{ matrix.arch }}-
+
+      - name: Configure
+        run: |
+          set -euo pipefail
+          ./autogen.sh
+
+          QT_PREFIX="$(brew --prefix qt@5)"
+          SQLITE_PREFIX="$(brew --prefix sqlite)"
+          BDB_PREFIX="$(brew --prefix berkeley-db@4)"
+
+          export PATH="${QT_PREFIX}/bin:${PATH}"
+          export PKG_CONFIG_PATH="${QT_PREFIX}/lib/pkgconfig:${SQLITE_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
+          export BDB_CFLAGS="-I${BDB_PREFIX}/include"
+          export BDB_LIBS="-L${BDB_PREFIX}/lib -ldb_cxx-4.8"
+          export CXXFLAGS="${CXXFLAGS:-} -I${BDB_PREFIX}/include"
+          export LDFLAGS="${LDFLAGS:-} -L${BDB_PREFIX}/lib"
+
+          ./configure \
+            --disable-dependency-tracking \
+            --disable-bench \
+            --disable-tests \
+            --disable-gui-tests \
+            --with-gui=qt5 \
+            --with-sqlite=yes \
+            --enable-wallet \
+            --with-miniupnpc \
+            --with-qrencode
+
+          echo "=== configure summary (tail) ==="
+          ./config.status --config || true
+
+      - name: Build
+        run: |
+          set -euo pipefail
+          NCPU="$(sysctl -n hw.ncpu)"
+          make -j"${NCPU}"
+          ccache -s || true
+
+      - name: Create DMG
+        run: |
+          set -euo pipefail
+          make deploy
+          ls -lah *.dmg KittehCoin-Qt.app/Contents/MacOS/ 2>/dev/null || true
+          test -f "KittehCoin2.0-Core.dmg"
+
+      - name: Package release assets
+        id: package
+        run: |
+          set -euo pipefail
+          ARCH="${{ matrix.arch }}"
+          OUT_DIR="${{ github.workspace }}/dist"
+          mkdir -p "${OUT_DIR}"
+
+          OUT_NAME="KittehCoin2.0-Core-${VERSION}-macos-${ARCH}.dmg"
+          cp "KittehCoin2.0-Core.dmg" "${OUT_DIR}/${OUT_NAME}"
+          shasum -a 256 "${OUT_DIR}/${OUT_NAME}" | tee "${OUT_DIR}/${OUT_NAME}.sha256"
+
+          echo "dmg=${OUT_DIR}/${OUT_NAME}" >> "$GITHUB_OUTPUT"
+          echo "sha256=${OUT_DIR}/${OUT_NAME}.sha256" >> "$GITHUB_OUTPUT"
+          echo "asset_name=${OUT_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.asset_name }}
+          path: |
+            ${{ steps.package.outputs.dmg }}
+            ${{ steps.package.outputs.sha256 }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Attach to GitHub Release
+        if: github.event_name == 'release' || inputs.release_tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.release_tag }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${TAG}" ]]; then
+            echo "No release tag; skipping upload."
+            exit 0
+          fi
+          gh release upload "${TAG}" \
+            "${{ steps.package.outputs.dmg }}" \
+            "${{ steps.package.outputs.sha256 }}" \
+            --clobber
+          echo "Uploaded to release ${TAG}"
