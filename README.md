@@ -1,72 +1,96 @@
-# KittehCoin 2.0 [MEOWS]
+<p align="center">
+  <img src="https://pool.kittehcoin.ca/static/logo.png" alt="KittehCoin 2.0" width="160">
+</p>
 
-Official reboot of **KittehCoin**, originally launched December 2013.
+<h1 align="center">KittehCoin 2.0</h1>
+<p align="center"><b>Kitteh sez MEOW.</b> Ticker <code>MEOWS</code>. Own chain. No premine. Not a token.</p>
 
-This tree is a fresh relaunch — not a continuation of the legacy chain — built on
-[Litecoin Core v0.21.5.6](https://github.com/litecoin-project/litecoin/releases/tag/v0.21.5.6)
-with KittehCoin branding, economics, and consensus identity restored.
+<p align="center">
+  <a href="https://www.kittehcoin.ca">Website</a> ·
+  <a href="https://www.kittehcoin.ca/start">Get started</a> ·
+  <a href="https://explorer.kittehcoin.ca">Explorer</a> ·
+  <a href="https://pool.kittehcoin.ca">Pool</a> ·
+  <a href="https://faucet.kittehcoin.ca">Faucet</a> ·
+  <a href="https://wallet.kittehcoin.ca">Browser wallet</a> ·
+  <a href="https://github.com/kittehcoin/KittehCoin2.0/releases">Releases</a> ·
+  <a href="https://discord.gg/UxEcfrz6">Discord</a>
+</p>
 
-Legacy reference: [kittehcoin/kittehcoin](https://github.com/kittehcoin/kittehcoin)
+---
 
-## Highlights
+The original [KittehCoin](https://github.com/kittehcoin/kittehcoin) showed up in December 2013. This is the reboot — a **fresh genesis**, not a continuation of the old ledger. Same spirit (Scrypt, K-addresses, lottery-style rewards), modern code from [Litecoin Core v0.21.5.6](https://github.com/litecoin-project/litecoin/releases/tag/v0.21.5.6).
 
-| Parameter | Value |
-|-----------|-------|
+If it is not linked from [kittehcoin.ca](https://www.kittehcoin.ca), it is not this coin. Ticker is **MEOWS**, not MEOW, not MEWC, and not a Base / ETH / BSC token.
+
+## Come on in
+
+| | |
+|---|---|
+| Grab a wallet | [kittehcoin.ca](https://www.kittehcoin.ca) — Core is the real thing. [Browser wallet](https://wallet.kittehcoin.ca) if you just need a K-address. |
+| First hour | [Start here](https://www.kittehcoin.ca/start) |
+| Watch the chain | [explorer.kittehcoin.ca](https://explorer.kittehcoin.ca) |
+| Mine | [pool.kittehcoin.ca](https://pool.kittehcoin.ca) · [how to point a miner](https://www.kittehcoin.ca/mine) |
+| A sip of coins | [faucet.kittehcoin.ca](https://faucet.kittehcoin.ca) |
+| Hang out | [discord.gg/UxEcfrz6](https://discord.gg/UxEcfrz6) |
+
+Receive and mine to a **K…** address. That is the one official services pay.
+
+GPU / CPU pool: `stratum+tcp://stratum.kittehcoin.ca:3333`  
+ASIC: `stratum+tcp://stratum.kittehcoin.ca:3433`  
+Username = your K-address. Password = `x`.
+
+## The useful bits
+
+| | |
+|---|---|
 | Ticker | **MEOWS** |
-| Proof of Work | Scrypt |
-| Difficulty | Kimoto Gravity Well (min 36 / max 1008 blocks) |
+| Algo | Scrypt |
 | Block time | 60 seconds |
-| Address prefix | **K** (version byte `45`) |
-| Bech32 HRP | `meows` |
-| P2P port | `22566` |
-| RPC port | `22565` |
+| Difficulty | Kimoto Gravity Well (min 4 / max 1008) |
+| Addresses | **K** (version byte `45`) · bech32 `meows1…` |
 | Max money | 25,000,000,000 MEOWS |
-| Network magic | `4D 45 4F 57` (`MEOW`) — distinct from legacy `c0c0c0c0` |
+| P2P / RPC | `22566` / `22565` |
+| Magic | `4D 45 4F 57` (`MEOW`) — not the old `c0c0c0c0` |
+| Seeds | `seed1.kittehcoin.ca`, `seed2.kittehcoin.ca` |
 
-## Mining rewards (from original KittehCoin post-hardfork schedule)
+Rewards are the original post-hardfork lottery: at least **1,000 MEOWS** a block, rolled from the previous block hash.
 
-Guaranteed minimum **1,000 MEOWS** per block. Reward is deterministic from the previous block hash.
+| Blocks | Reward |
+|--------|--------|
+| 1 – 200,000 | 1,000 – 50,000 |
+| 200,001 – 400,000 | 1,000 – 25,000 |
+| 400,001 – 500,000 | 1,000 – 12,500 |
+| 500,001 – 600,000 | 1,000 – 6,250 |
+| 600,001 – 700,000 | 1,000 – 3,125 |
+| 700,001+ | 2,000 flat |
 
-| Blocks | Reward range |
-|--------|----------------|
-| 1 – 200,000 | 1,000 – 50,000 MEOWS |
-| 200,001 – 400,000 | 1,000 – 25,000 MEOWS |
-| 400,001 – 500,000 | 1,000 – 12,500 MEOWS |
-| 500,001 – 600,000 | 1,000 – 6,250 MEOWS |
-| 600,001 – 700,000 | 1,000 – 3,125 MEOWS |
-| 700,001+ | 2,000 MEOWS (flat) |
+## Building from this tree
 
-## Binaries
+You get `kittehcoind`, `kittehcoin-qt`, `kittehcoin-cli`, `kittehcoin-tx`, and `kittehcoin-wallet`.
 
-After building you get:
-
-- `kittehcoind` — full node daemon  
-- `kittehcoin-qt` — wallet GUI (uses the KittehCoin 2.0 logo)  
-- `kittehcoin-cli` / `kittehcoin-tx` / `kittehcoin-wallet`
-
-Data directory: `~/.kittehcoin` (Linux) / `%APPDATA%\KittehCoin` (Windows)
-
+Data dir: `~/.kittehcoin` (Linux) · `~/Library/Application Support/KittehCoin` (macOS) · `%APPDATA%\KittehCoin` (Windows)  
 Config file: `kittehcoin.conf`
-
-## Build
-
-Follow Litecoin/Bitcoin Core docs for your platform:
-
-- [doc/build-unix.md](doc/build-unix.md)
-- [doc/build-windows.md](doc/build-windows.md)
-- [doc/build-osx.md](doc/build-osx.md)
-
-Typical Unix flow:
 
 ```sh
 ./autogen.sh
 ./configure
 make
-make install   # optional
 ```
 
-## Branding note
+Platform notes: [Unix](doc/build-unix.md) · [Windows](doc/build-windows.md) · [macOS](doc/build-osx.md). Prebuilt wallets live on [Releases](https://github.com/kittehcoin/KittehCoin2.0/releases).
 
-This is the **official KittehCoin 2.0** relaunch by the original project lineage.
-Impostor forks claiming the KittehCoin name are unrelated to this codebase.
+## Right chain?
 
+Genesis hash should be:
+
+`4f2f309ba49ca94f1a0ad98186845fe85a0b3de2ce5cc5b541057348cc6ea72a`
+
+If it is not, stop. You are somewhere else. Compare the tip with [the explorer](https://explorer.kittehcoin.ca). Do not import an old 2013 `wallet.dat`.
+
+## License
+
+MIT — see [COPYING](COPYING). Bitcoin Core, Litecoin Core, and KittehCoin folks (2013–2026).
+
+This is the official KittehCoin 2.0 relaunch. Impostor forks using the name are unrelated to this tree.
+
+In Kitteh We Trust.
