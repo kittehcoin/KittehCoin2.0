@@ -34,8 +34,6 @@ Communication
 
 - **Discord:** [discord.gg/UxEcfrz6](https://discord.gg/UxEcfrz6)
 - **GitHub:** issues and pull requests
-- **Mailing list:** [kittehcoin-dev](https://groups.google.com/forum/#!forum/kittehcoin-dev)
-  for messy consensus / P2P protocol ideas *before* a big patch set
 
 Please do not file public issues for undisclosed security bugs. See [SECURITY.md](SECURITY.md).
 
