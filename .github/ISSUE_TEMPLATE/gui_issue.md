@@ -1,11 +1,19 @@
 ---
-name: An issue or feature request related to the GUI
-about: Any report, issue or feature request related to the GUI should be reported at https://github.com/bitcoin-core/gui/issues/
-title: Any report, issue or feature request related to the GUI should be reported at https://github.com/bitcoin-core/gui/issues/
+name: GUI issue or request
+about: kittehcoin-qt bugs and feature ideas live in this repository
+title: ''
 labels: GUI
 assignees: ''
-
 ---
 
-Any report, issue or feature request related to the GUI should be reported at
-https://github.com/bitcoin-core/gui/issues/
+<!-- GUI work belongs here, not at bitcoin-core/gui. -->
+
+**What is going on?**
+
+<!-- Bug, missing piece, or idea. Screenshots help. -->
+
+**KittehCoin2.0 Core version**
+
+<!-- From Help → About, or `kittehcoin-qt --version`. -->
+
+**OS**

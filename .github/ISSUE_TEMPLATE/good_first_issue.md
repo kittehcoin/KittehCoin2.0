@@ -1,22 +1,18 @@
 ---
 name: Good first issue
-about: '(Regular devs only): Suggest a new good first issue'
+about: '(Maintainers) Suggest a starter task'
 title: ''
-labels: ''
+labels: 'good first issue'
 assignees: ''
-
 ---
 
-<!-- Needs the label "good first issue" assigned manually before or after opening -->
+<!-- Keep this uncontroversial, with a fairly obvious solution. -->
 
-<!-- A good first issue is an uncontroversial issue, that has a relatively unique and obvious solution -->
+#### Useful skills
 
-<!-- Motivate the issue and explain the solution briefly -->
+<!-- e.g. Qt GUI, C++ tests, or a basic feel for Scrypt mining / kittehcoin-cli. -->
 
-#### Useful skills:
+#### Want to work on this?
 
-<!-- (For example, “C++11 std::thread”, “Qt5 GUI and async GUI design” or “basic understanding of Bitcoin mining and the Bitcoin Core RPC interface”.) -->
-
-#### Want to work on this issue?
-
-For guidance on contributing, please read [CONTRIBUTING.md](https://github.com/bitcoin/bitcoin/blob/master/CONTRIBUTING.md) before opening your pull request.
+Read [CONTRIBUTING.md](https://github.com/kittehcoin/KittehCoin2.0/blob/main/CONTRIBUTING.md),
+then open a PR. Discord: https://discord.gg/UxEcfrz6

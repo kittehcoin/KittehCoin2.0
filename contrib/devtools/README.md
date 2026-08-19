@@ -20,7 +20,8 @@ copyright\_header.py
 ====================
 
 Provides utilities for managing copyright headers of `The Bitcoin Core
-developers` in repository source files. It has three subcommands:
+developers` (and inherited Litecoin / KittehCoin headers) in repository
+source files. It has three subcommands:
 
 ```
 $ ./copyright_header.py report <base_directory> [verbose]

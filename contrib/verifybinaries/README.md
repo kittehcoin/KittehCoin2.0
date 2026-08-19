@@ -1,41 +1,26 @@
 ### Verify Binaries
 
-#### Preparation:
+KittehCoin2.0 Core releases are signed by **Ryan M** (`contact@kittehcoin.ca`).
+Import the key from [`contrib/gitian-keys/ryan-m.asc`](../gitian-keys/ryan-m.asc)
+and check the fingerprint against a few independent copies:
 
-Make sure you obtain the proper release signing key and verify the fingerprint with several independent sources.
-
-```sh
-$ gpg --fingerprint "Bitcoin Core binary release signing key"
-pub   4096R/36C2E964 2015-06-24 [expires: YYYY-MM-DD]
-      Key fingerprint = 01EA 5486 DE18 A882 D4C2  6845 90C8 019E 36C2 E964
-uid                  Wladimir J. van der Laan (Bitcoin Core binary release signing key) <laanwj@gmail.com>
+```
+E1E044BE7AC175AA6E935AF8A2770580E4E08451
 ```
 
-#### Usage:
-
-This script attempts to download the signature file `SHA256SUMS.asc` from https://bitcoin.org.
-
-It first checks if the signature passes, and then downloads the files specified in the file, and checks if the hashes of these files match those that are specified in the signature file.
-
-The script returns 0 if everything passes the checks. It returns 1 if either the signature check or the hash check doesn't pass. If an error occurs the return value is 2.
-
-
 ```sh
-./verify.sh bitcoin-core-0.11.2
-./verify.sh bitcoin-core-0.12.0
-./verify.sh bitcoin-core-0.13.0-rc3
+gpg --import ../gitian-keys/ryan-m.asc
+gpg --fingerprint E1E044BE7AC175AA6E935AF8A2770580E4E08451
 ```
 
-If you only want to download the binaries of certain platform, add the corresponding suffix, e.g.:
+#### Usage
+
+The helper script was written for Bitcoin Core’s old download layout
+(`bitcoincore.org` / `bitcoin.org`). Prefer verifying GitHub Release
+`SHA256SUMS` (or the hashes posted on [kittehcoin.ca](https://www.kittehcoin.ca))
+with that key until the script is pointed at KittehCoin hosts.
 
 ```sh
-./verify.sh bitcoin-core-0.11.2-osx
-./verify.sh 0.12.0-linux
-./verify.sh bitcoin-core-0.13.0-rc3-win64
-```
-
-If you do not want to keep the downloaded binaries, specify anything as the second parameter.
-
-```sh
-./verify.sh bitcoin-core-0.13.0 delete
+gpg --verify SHA256SUMS.asc SHA256SUMS
+sha256sum -c SHA256SUMS
 ```

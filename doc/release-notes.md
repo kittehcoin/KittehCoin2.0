@@ -15,7 +15,7 @@ Notable changes
 ===============
 
 - Product name: **KittehCoin2.0 Core** · version **2.0.0** · ticker **MEOWS**
-- Website / seeds: **kittehcoin.ca** (`seed1` / `seed2`)
+- Website / seeds: **kittehcoin.ca** (`seed1` / `seed2` / `seed3` / `seed4`)
 - Network magic `MEOW` (`4D 45 4F 57`), P2P `22566`, RPC `22565`
 - Address prefix **K**, bech32 HRP **meows**
 - Scrypt PoW, 60s blocks, Kimoto Gravity Well (min 4 / max 1008)

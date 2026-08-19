@@ -20,7 +20,7 @@ Contains [Designer UI](https://doc.qt.io/qt-5.9/designer-using-a-ui-file.html) f
 
 ### locale
 
-Contains translations. They are periodically updated. The process is described [here](/doc/translation_process.md).
+Contains translations. They are periodically updated. If you want to help, ask on [Discord](https://discord.gg/UxEcfrz6) rather than opening a locale-only PR.
 
 ### res
 
@@ -38,7 +38,7 @@ Represents the main window of the KittehCoin UI.
 
 The model. When it has a corresponding controller, it generally inherits from  [QAbstractTableModel](https://doc.qt.io/qt-5/qabstracttablemodel.html). Models that are used by controllers as helpers inherit from other Qt classes like [QValidator](https://doc.qt.io/qt-5/qvalidator.html).
 
-ClientModel is used by the main application `bitcoingui` and several models like `peertablemodel`.
+ClientModel is used by the main application (`bitcoingui` — upstream filename) and several models like `peertablemodel`.
 
 ### \*page.(h/cpp)
 
@@ -58,9 +58,9 @@ Represents the view to a single wallet.
 
 ### Other .h/cpp files
 
-* UI elements like BitcoinAmountField, which inherit from QWidget.
+* UI elements like BitcoinAmountField (upstream class name), which inherit from QWidget.
 * `bitcoinstrings.cpp`: automatically generated
-* `bitcoinunits.(h/cpp)`: BTC / mBTC / etc handling
+* `bitcoinunits.(h/cpp)`: MEOWS display units (filenames leftover from Bitcoin Core)
 * `callback.h`
 * `guiconstants.h`: UI colors, app name, etc
 * `guiutil.h`: several helper functions
@@ -71,7 +71,7 @@ Represents the view to a single wallet.
 
 See [CONTRIBUTING.md](/CONTRIBUTING.md) for general guidelines. Specifically for Qt:
 
-* don't change `local/bitcoin_en.ts`; this happens [automatically](/doc/translation_process.md#writing-code-with-translations)
+* don't change generated `locale/*.ts` files; talk to us on Discord if you want to help translate
 
 ## Using Qt Creator as IDE
 

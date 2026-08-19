@@ -1,41 +1,36 @@
 ---
 name: Bug report
-about: Create a report to help us improve (use this for suspected bugs only, if not sure, open a regular issue below)
+about: Something in KittehCoin2.0 Core is broken
 title: ''
 labels: Bug
 assignees: ''
-
 ---
 
-<!-- This issue tracker is only for technical issues related to Bitcoin Core.
+<!-- This tracker is for KittehCoin 2.0 (MEOWS) technical bugs.
 
-General bitcoin questions and/or support requests are best directed to the Bitcoin StackExchange at https://bitcoin.stackexchange.com.
+Questions and “how do I mine / sync” belong on Discord: https://discord.gg/UxEcfrz6
+Security issues: email contact@kittehcoin.ca or use GitHub Security Advisories.
+Do not post undisclosed vulns here.
 
-For reporting security issues, please read instructions at https://bitcoincore.org/en/contact/.
-
-If the node is "stuck" during sync or giving "block checksum mismatch" errors, please ensure your hardware is stable by running memtest and observe CPU temperature with a load-test tool such as linpack before creating an issue! -->
-
-<!-- Describe the issue -->
+If the node is stuck during sync or throwing checksum errors, run a memory test
+and watch CPU temps before opening an issue. -->
 
 **Expected behavior**
 
-<!--- What behavior did you expect? -->
+<!-- What should have happened? -->
 
 **Actual behavior**
 
-<!--- What was the actual behavior (provide screenshots if the issue is GUI-related)? -->
+<!-- What happened instead? Screenshots help for GUI bugs. -->
 
 **To reproduce**
 
-<!--- How reliably can you reproduce the issue, what are the steps to do so? -->
+<!-- Steps, how often it happens. -->
 
 **System information**
 
-<!-- What version of Bitcoin Core are you using, where did you get it (website, self-compiled, etc)? -->
+<!-- KittehCoin2.0 Core version, where you got it (kittehcoin.ca, GitHub Releases, self-built). -->
 
-<!-- What type of machine are you observing the error on (OS/CPU and disk type)? -->
+<!-- OS / CPU / disk. GUI issue? Desktop environment if Linux. -->
 
-<!-- GUI-related issue? What is your operating system and its version? If Linux, what is your desktop environment and graphical shell? -->
-
-<!-- Any extra information that might be useful in the debugging process. -->
-<!--- This is normally the contents of a `debug.log` or `config.log` file. Raw text or a link to a pastebin type site are preferred. -->
+<!-- Extra: debug.log or config.log, as text or a paste link. -->
