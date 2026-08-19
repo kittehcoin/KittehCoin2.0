@@ -51,7 +51,7 @@ Username = your K-address. Password = `x`.
 | Max money | 25,000,000,000 MEOWS |
 | P2P / RPC | `22566` / `22565` |
 | Magic | `4D 45 4F 57` (`MEOW`) — not the old `c0c0c0c0` |
-| Seeds | `seed1.kittehcoin.ca`, `seed2.kittehcoin.ca` |
+| Seeds | `seed1.kittehcoin.ca`, `seed2.kittehcoin.ca`, `seed3.kittehcoin.ca`, `seed4.kittehcoin.ca` |
 
 Rewards are the original post-hardfork lottery: at least **1,000 MEOWS** a block, rolled from the previous block hash.
 
