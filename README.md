@@ -31,7 +31,7 @@ If it is not linked from [kittehcoin.ca](https://www.kittehcoin.ca), it is not t
 | Watch the chain | [explorer.kittehcoin.ca](https://explorer.kittehcoin.ca) |
 | Mine | [pool.kittehcoin.ca](https://pool.kittehcoin.ca) · [how to point a miner](https://www.kittehcoin.ca/mine) |
 | A sip of coins | [faucet.kittehcoin.ca](https://faucet.kittehcoin.ca) |
-| Hang out | [discord.gg/UxEcfrz6](https://discord.gg/UxEcfrz6) |
+| Hang out | [discord.gg/UxEcfrz6](https://discord.gg/UxEcfrz6)](https://discord.gg/RZNH65TP) |
 
 Receive and mine to a **K…** address. That is the one official services pay.
 
