@@ -8,7 +8,7 @@ assignees: ''
 
 <!-- This tracker is for KittehCoin 2.0 (MEOWS) technical bugs.
 
-Questions and “how do I mine / sync” belong on Discord: https://discord.gg/UxEcfrz6
+Questions and “how do I mine / sync” belong on Discord: https://discord.gg/VctpE93cmU
 Security issues: email contact@kittehcoin.ca or use GitHub Security Advisories.
 Do not post undisclosed vulns here.
 

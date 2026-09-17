@@ -15,4 +15,4 @@ assignees: ''
 #### Want to work on this?
 
 Read [CONTRIBUTING.md](https://github.com/kittehcoin/KittehCoin2.0/blob/main/CONTRIBUTING.md),
-then open a PR. Discord: https://discord.gg/UxEcfrz6
+then open a PR. Discord: https://discord.gg/VctpE93cmU

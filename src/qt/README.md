@@ -20,7 +20,7 @@ Contains [Designer UI](https://doc.qt.io/qt-5.9/designer-using-a-ui-file.html) f
 
 ### locale
 
-Contains translations. They are periodically updated. If you want to help, ask on [Discord](https://discord.gg/UxEcfrz6) rather than opening a locale-only PR.
+Contains translations. They are periodically updated. If you want to help, ask on [Discord](https://discord.gg/VctpE93cmU) rather than opening a locale-only PR.
 
 ### res
 

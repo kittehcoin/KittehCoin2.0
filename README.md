@@ -13,7 +13,7 @@
   <a href="https://faucet.kittehcoin.ca">Faucet</a> ·
   <a href="https://wallet.kittehcoin.ca">Browser wallet</a> ·
   <a href="https://github.com/kittehcoin/KittehCoin2.0/releases">Releases</a> ·
-  <a href="https://discord.gg/RZNH65TP">Discord</a>
+  <a href="https://discord.gg/VctpE93cmU">Discord</a>
 </p>
 
 ---
@@ -31,7 +31,7 @@ If it is not linked from [kittehcoin.ca](https://www.kittehcoin.ca), it is not t
 | Watch the chain | [explorer.kittehcoin.ca](https://explorer.kittehcoin.ca) |
 | Mine | [pool.kittehcoin.ca](https://pool.kittehcoin.ca) · [how to point a miner](https://www.kittehcoin.ca/mine) |
 | A sip of coins | [faucet.kittehcoin.ca](https://faucet.kittehcoin.ca) |
-| Hang out | [discord.gg/RZNH65TP](https://discord.gg/RZNH65TP) |
+| Hang out | [discord.gg/VctpE93cmU](https://discord.gg/VctpE93cmU) |
 
 Receive and mine to a **K…** address. That is the one official services pay.
 

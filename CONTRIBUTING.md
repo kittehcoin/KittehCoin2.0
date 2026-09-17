@@ -3,7 +3,7 @@ Contributing to KittehCoin2.0 Core
 
 Anyone is welcome to help — review, testing, and patches all count. This tree is
 the official **KittehCoin 2.0 (MEOWS)** node and wallet, rebuilt from Litecoin
-Core. Hang out on [Discord](https://discord.gg/UxEcfrz6) if you want a human
+Core. Hang out on [Discord](https://discord.gg/VctpE93cmU) if you want a human
 before you open a PR.
 
 There is no inner circle of “Core developers.” Maintainers merge pull requests
@@ -32,7 +32,7 @@ Do not open KittehCoin bugs against bitcoin/bitcoin or bitcoin-core/gui.
 Communication
 -------------
 
-- **Discord:** [discord.gg/UxEcfrz6](https://discord.gg/UxEcfrz6)
+- **Discord:** [discord.gg/VctpE93cmU](https://discord.gg/VctpE93cmU)
 - **GitHub:** issues and pull requests
 
 Please do not file public issues for undisclosed security bugs. See [SECURITY.md](SECURITY.md).
