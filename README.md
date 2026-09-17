@@ -13,7 +13,7 @@
   <a href="https://faucet.kittehcoin.ca">Faucet</a> ·
   <a href="https://wallet.kittehcoin.ca">Browser wallet</a> ·
   <a href="https://github.com/kittehcoin/KittehCoin2.0/releases">Releases</a> ·
-  <a href="https://discord.gg/UxEcfrz6">Discord</a>
+  <a href="https://discord.gg/RZNH65TP">Discord</a>
 </p>
 
 ---
